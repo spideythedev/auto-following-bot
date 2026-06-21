@@ -1,0 +1,12 @@
+{
+  "name": "auto-follow-bot",
+  "version": "1.0.0",
+  "description": "Auto follow back bot for GitHub",
+  "main": "src/follow.js",
+  "scripts": {
+    "start": "node src/follow.js"
+  },
+  "dependencies": {
+    "@octokit/rest": "^20.0.0"
+  }
+}
