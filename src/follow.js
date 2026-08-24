@@ -9,53 +9,45 @@ if (!TOKEN) {
 }
 
 const octokit = new Octokit({ auth: TOKEN });
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
-async function getFollowers() {
-  const followers = [];
+async function fetchAllPages(fetchPage) {
+  const results = [];
   let page = 1;
-  
+
   while (true) {
     try {
-      const { data } = await octokit.rest.users.listFollowersForUser({
-        username: USERNAME,
-        per_page: 100,
-        page: page
-      });
-      
-      if (data.length === 0) break;
-      followers.push(...data.map(user => user.login));
+      const { data } = await fetchPage(page);
+      if (!data.length) break;
+      results.push(...data.map((user) => user.login));
       page++;
     } catch (error) {
-      console.error(`Error fetching followers: ${error.message}`);
+      console.error(`Error fetching data: ${error.message}`);
       break;
     }
   }
-  
-  return followers;
+
+  return results;
+}
+
+async function getFollowers() {
+  return fetchAllPages((page) =>
+    octokit.rest.users.listFollowersForUser({
+      username: USERNAME,
+      per_page: 100,
+      page,
+    })
+  );
 }
 
 async function getFollowing() {
-  const following = [];
-  let page = 1;
-  
-  while (true) {
-    try {
-      const { data } = await octokit.rest.users.listFollowingForUser({
-        username: USERNAME,
-        per_page: 100,
-        page: page
-      });
-      
-      if (data.length === 0) break;
-      following.push(...data.map(user => user.login));
-      page++;
-    } catch (error) {
-      console.error(`Error fetching following: ${error.message}`);
-      break;
-    }
-  }
-  
-  return following;
+  return fetchAllPages((page) =>
+    octokit.rest.users.listFollowingForUser({
+      username: USERNAME,
+      per_page: 100,
+      page,
+    })
+  );
 }
 
 async function followUser(username) {
@@ -66,7 +58,7 @@ async function followUser(username) {
   } catch (error) {
     if (error.status === 403) {
       console.log("Rate limit hit, waiting 60 seconds...");
-      await new Promise(resolve => setTimeout(resolve, 60000));
+      await sleep(60000);
       return followUser(username);
     }
     console.error(`Failed to follow ${username}: ${error.message}`);
@@ -77,23 +69,25 @@ async function followUser(username) {
 async function autoFollowBack() {
   console.log(`Auto Follow Bot - ${USERNAME}`);
   console.log(`Time: ${new Date().toISOString()}`);
-  
-  const followers = await getFollowers();
-  const following = await getFollowing();
-  
+
+  const [followers, following] = await Promise.all([
+    getFollowers(),
+    getFollowing(),
+  ]);
+
   console.log(`Followers: ${followers.length}`);
   console.log(`Following: ${following.length}`);
-  
-  const toFollow = followers.filter(f => !following.includes(f));
+
+  const toFollow = followers.filter((user) => !following.includes(user));
   console.log(`Need to follow back: ${toFollow.length}`);
-  
-  for (let i = 0; i < toFollow.length; i++) {
-    await followUser(toFollow[i]);
-    if (i < toFollow.length - 1) {
-      await new Promise(resolve => setTimeout(resolve, 2000));
+
+  for (const [index, user] of toFollow.entries()) {
+    await followUser(user);
+    if (index < toFollow.length - 1) {
+      await sleep(2000);
     }
   }
-  
+
   console.log("Complete!");
 }
 
