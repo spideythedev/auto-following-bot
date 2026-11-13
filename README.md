@@ -2,7 +2,7 @@
 
 Automatically follows back GitHub followers.
 
-![Repo Banner](./repo-banner.png)
+<img src="./repo-banner.png" border-radius="5px">
 
 ## Setup
 
