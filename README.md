@@ -1,6 +1,7 @@
 # Auto Follow Back Bot
 
 Automatically follows back GitHub followers.
+
 ![Repo Banner](./repo-banner.png)
 
 ## Setup
