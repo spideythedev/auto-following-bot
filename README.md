@@ -1,6 +1,7 @@
 # Auto Follow Back Bot
 
 Automatically follows back GitHub followers.
+![Repo Banner](./repo-banner.png)
 
 ## Setup
 
@@ -9,3 +10,7 @@ Automatically follows back GitHub followers.
 3. Enable Actions
 
 Runs every 6 hours.
+
+---
+
+♤ • ♡ • ◇ • ♧
